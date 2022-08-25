@@ -6,4 +6,4 @@ flake8
 prospector
 pytest
 black
-pylint==2.3.0
+pylint==2.11.1
