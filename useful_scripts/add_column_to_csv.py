@@ -7,8 +7,8 @@ from csv import DictWriter
 def add_column_in_csv(input_file, output_file, transform_row):
     """Append a column in existing csv using csv.reader / csv.writer classes"""
     # Open the input_file in read mode and output_file in write mode
-    with open(input_file, "r", encoding="utf8") as read_obj, open(
-        output_file, "w", newline="", encoding="utf8"
+    with open(input_file, "r", encoding='utf-8') as read_obj, open(
+        output_file, "w", newline="", encoding='utf-8'
     ) as write_obj:
         # Create a csv.reader object from the input file object
         csv_reader = reader(read_obj)
@@ -25,8 +25,8 @@ def add_column_in_csv(input_file, output_file, transform_row):
 def add_column_in_csv_2(input_file, output_file, transform_row, tansform_column_names):
     """Append a column in existing csv using csv.reader / csv.writer classes"""
     # Open the input_file in read mode and output_file in write mode
-    with open(input_file, "r", encoding="utf8") as read_obj, open(
-        output_file, "w", newline="", encoding="utf8"
+    with open(input_file, "r", encoding='utf-8') as read_obj, open(
+        output_file, "w", newline="", encoding='utf-8'
     ) as write_obj:
         # Create a DictReader object from the input file object
         dict_reader = DictReader(read_obj)
