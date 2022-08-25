@@ -6,5 +6,4 @@ flake8
 prospector
 pytest
 black
-pylint
-setuptools
+pylint==2.3.0
