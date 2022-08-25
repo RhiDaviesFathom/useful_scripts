@@ -2,8 +2,8 @@
 
 # external requirements
 click
-flake8==5.0.4
+flake8
 prospector
 pytest
 black
-pylint
+pylint==2.3.1
