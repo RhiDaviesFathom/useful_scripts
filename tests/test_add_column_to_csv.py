@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import patch
 from useful_scripts import add_column_to_csv
 
