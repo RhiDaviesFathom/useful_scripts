@@ -2,6 +2,7 @@
 
 # external requirements
 click
-flake8
+flake8==5.0.4
 prospector
 pytest
+black

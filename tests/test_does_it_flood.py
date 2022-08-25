@@ -2,7 +2,7 @@ import filecmp
 import os
 
 from click.testing import CliRunner
-from src.does_it_flood import does_it_flood
+from useful_scripts.does_it_flood import does_it_flood
 
 
 def test_does_it_flood():
