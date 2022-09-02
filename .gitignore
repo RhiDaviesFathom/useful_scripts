@@ -1,0 +1,5 @@
+# exclude everything
+useful_scripts/output/*
+
+# exception to the rule
+!useful_scripts/output/.gitkeep
