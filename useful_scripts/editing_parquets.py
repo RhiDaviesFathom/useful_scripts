@@ -5,7 +5,6 @@ import os
 import pathlib
 import shutil
 
-import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -34,8 +33,10 @@ def _safe_mkdir(relative_path: str) -> None:
 
 
 def create_catchment_parquet():
-
-    df = pd.DataFrame(
+    """
+    Uses a pandas dataframe to create a new parquet file.
+    """
+    catchment_df = pd.DataFrame(
         {
             "lat_id": [184065, 184065],
             "lon_id": [-13481, -13480],
@@ -45,14 +46,15 @@ def create_catchment_parquet():
         }
     )
 
-    table = pa.Table.from_pandas(df)
+    table = pa.Table.from_pandas(catchment_df)
     dir_path = _get_absolute_path_from_relative_path("output")
     pq.write_table(table, f"{dir_path}/catchment_290.parquet")
 
 
 def main():
     """
-    Comment out the unnecessary bit so that when editing_parquet.py from the command line, the desired behaviour occurs.
+    Comment out the unnecessary bit so that when editing_parquet.py from the command line,
+    the desired behaviour occurs.
     """
 
     # copy_parquet()
