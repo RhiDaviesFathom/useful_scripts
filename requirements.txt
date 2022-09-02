@@ -7,3 +7,6 @@ prospector
 pytest
 black
 pylint==2.11.1
+numpy~=1.23.2
+pandas~=1.4.4
+pyarrow~=9.0.0
