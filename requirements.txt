@@ -3,10 +3,12 @@
 # external requirements
 click
 flake8
-prospector
+prospector==1.9.0
 pytest
 black
-pylint
 numpy
 pandas
 pyarrow
+wheel
+setuptools<58
+pylint==2.15.6
