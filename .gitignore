@@ -3,3 +3,11 @@ useful_scripts/output/*
 
 # exception to the rule
 !useful_scripts/output/.gitkeep
+
+#virtual envirnoment
+venv/
+*.venv/
+*.idea/
+
+#pycache
+*__pycache__/
