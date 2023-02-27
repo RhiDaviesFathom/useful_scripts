@@ -21,12 +21,6 @@ def generate_wet_area_pickle(output_dir: str):
     wet_area_df.to_pickle(f"{output_dir}/wet_area_peril.pickle")
 
 
-import os
-import sys
-
-import pandas as pd
-
-
 def generate_wet_area_parquet(output_dir: str):
     """
     Generates wet_area_peril.parquet from the provided catchments dir
