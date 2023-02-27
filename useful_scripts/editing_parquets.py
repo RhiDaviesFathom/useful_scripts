@@ -41,7 +41,7 @@ def create_catchment_parquet():
             "lat_id": [184065, 184065],
             "lon_id": [-13481, -13480],
             "peril_id": ["ORF", "ORF"],
-            "return_period": [5, 5],
+            "return_period": [20, 20],
             "flood_depth_cm": [85, 57],
         }
     )
