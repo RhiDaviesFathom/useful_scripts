@@ -10,5 +10,5 @@ numpy
 pandas
 pyarrow
 wheel
-setuptools<58
+setuptools>65.5.1
 pylint==2.15.6
