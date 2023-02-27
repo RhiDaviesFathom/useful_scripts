@@ -187,9 +187,9 @@ class GLOBAL_FLOODKeysLookup(KeyLookupInterface):
                     input_vsf_filename_list[0]
                 )
 
-        # vulnerability_dict based on MCM_code
+        # vulnerability_parameter_dict 
         with io.open(
-            os.path.join(self.keys_data_directory, "vulnerability_dict.csv"),
+            os.path.join(self.keys_data_directory, "vulnerability_parameter_dict.csv"),
             "r",
             encoding="utf-8",
         ) as f:
@@ -225,23 +225,8 @@ class GLOBAL_FLOODKeysLookup(KeyLookupInterface):
             + constants.COASTAL_ID
         )
 
-        # File that links residential OED OccupancyCode to MCM_code
-        with io.open(
-            os.path.join(self.keys_data_directory, "MCM_OED_residential.csv"),
-            "r",
-            encoding="utf-8",
-        ) as f:
-            self.mcm_res_df = pd.read_csv(f, float_precision="high")
-
-        # File that links nonresidential OED OccupancyCode to MCM_code
-        with io.open(
-            os.path.join(self.keys_data_directory, "MCM_OED_nonresidential.csv"),
-            "r",
-            encoding="utf-8",
-        ) as f:
-            self.mcm_nonres_df = pd.read_csv(f, float_precision="high")
-
         # File that links (full precision) postcodes to their centroid latitude/longitude
+        # FIXME: what are we going to do about postcodes globally?
         with io.open(
             os.path.join(self.keys_data_directory, "postcode_dict.csv"),
             "r",
@@ -415,120 +400,7 @@ class GLOBAL_FLOODKeysLookup(KeyLookupInterface):
 
         return loc_df
 
-    def get_mcm_code_residential(self, loc_df_res: pd.DataFrame) -> pd.DataFrame:
-        """
-        # FIXME: this reference to mcm needs to be removed and replaced with new functionality.
-
-        Args:
-            loc_df_res (pd.DataFrame): the residential locations DataFrame
-
-        Returns:
-            pd.DataFrame: the residential locations Dataframe
-        """
-
-        # Get YearBuilt category
-        loc_df_res = loc_df_res.merge(right=self.yearbuilt_df, how="left")  # type: ignore
-
-        # Set building type for mobile homes
-        loc_df_res.loc[loc_df_res["mobilehome_cat"], "building_cat"] = "bungalow"  # type: ignore
-
-        # Assign MCM code based on BuildingType
-        # set 1 story detached
-        loc_df_res.loc[  # type: ignore
-            (loc_df_res["buildingtype"] == 1)
-            & (loc_df_res["numberofstoreys"] == 1)
-            & (loc_df_res["building_cat"].isnull()),
-            "building_cat",
-        ] = "bungalow"
-        # set detached
-        loc_df_res.loc[  # type: ignore
-            (loc_df_res["buildingtype"] == 1) & (loc_df_res["building_cat"].isnull()),
-            "building_cat",
-        ] = "detached"
-        # set semi-detached
-        loc_df_res.loc[  # type: ignore
-            (loc_df_res["buildingtype"] == 2) & (loc_df_res["building_cat"].isnull()),
-            "building_cat",
-        ] = "semidetached"
-        # set terraced
-        loc_df_res.loc[  # type: ignore
-            ((loc_df_res["buildingtype"] == 3) | (loc_df_res["buildingtype"] == 4))
-            & (loc_df_res["building_cat"].isnull()),
-            "building_cat",
-        ] = "terraced"
-        # set multi story bungalow
-        loc_df_res.loc[  # type: ignore
-            (loc_df_res["buildingtype"] == 5)
-            & (loc_df_res["numberofstoreys"] > 1)
-            & (loc_df_res["building_cat"].isnull()),
-            "building_cat",
-        ] = "detached"
-        # set bungalow
-        loc_df_res.loc[  # type: ignore
-            (loc_df_res["buildingtype"] == 5) & (loc_df_res["building_cat"].isnull()),
-            "building_cat",
-        ] = "bungalow"
-
-        # Assign MCM code based on OccupancyCode
-        # OVERRIDE flats
-        loc_df_res.loc[
-            (loc_df_res["occupancycode"] == 1052)
-            | (loc_df_res["occupancycode"] == 1055),
-            "building_cat",
-        ] = "flat"  # type: ignore
-        # OVERRIDE terraced
-        loc_df_res.loc[
-            (loc_df_res["occupancycode"] == 1056), "building_cat"
-        ] = "terraced"  # type: ignore
-
-        # Merge to get MCM code
-        loc_df_res = loc_df_res.merge(right=self.mcm_res_df, how="left")  # type: ignore
-
-        # OVERRIDE temporary lodging
-        loc_df_res.loc[
-            (loc_df_res["occupancycode"] == 1053), ["mcm_code", "building_cat"]  # type: ignore
-        ] = [
-            51,
-            "nonres",  # type: ignore
-        ]  # assign directly as nonresidential
-        # OVERRIDE group institutional housing
-        loc_df_res.loc[
-            (loc_df_res["occupancycode"] == 1054), ["mcm_code", "building_cat"]  # type: ignore
-        ] = [
-            6,
-            "nonres",  # type: ignore
-        ]  # assign directly as nonresidential
-        # Make remaining valid OccupancyCodes a general MCM code
-        loc_df_res.loc[
-            (  # type: ignore
-                (loc_df_res["occupancycode"] == 1050)
-                | (loc_df_res["occupancycode"] == 1051)
-                | (loc_df_res["occupancycode"] == 1000)
-            )
-            & (loc_df_res["building_cat"].isnull()),
-            ["mcm_code", "building_cat"],
-        ] = [
-            1,
-            "general_res",  # type: ignore
-        ]  # assign directly as general residential
-
-        return loc_df_res
-
-    def get_mcm_code_non_residential(self, loc_df_nonres: pd.DataFrame) -> pd.DataFrame:
-        """
-        # FIXME: this reference to mcm needs to be removed and replaced with new functionality.
-
-        Args:
-            loc_df_nonres (pd.DataFrame): the nonresidential locations DataFrame
-
-        Returns:
-            pd.DataFrame: the nonresidential locations DataFrame
-        """
-
-        loc_df_nonres = loc_df_nonres.merge(right=self.mcm_nonres_df, how="left")  # type: ignore
-        loc_df_nonres["building_cat"] = "nonres"
-
-        return loc_df_nonres
+    
 
     def get_number_of_storeys(self, loc_df: pd.DataFrame) -> pd.DataFrame:
         """

@@ -8,6 +8,7 @@ useful_scripts/output/*
 venv/
 *.venv/
 *.idea/
+.DS_store
 
 #pycache
 *__pycache__/
