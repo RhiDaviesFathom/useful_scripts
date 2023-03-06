@@ -53,13 +53,20 @@ CATCHMENT_EVENTS = {
 
 
 @click.command()
-@click.option("--event_id", help="Event Id", type=click.INT)
-@click.option(
+@click.argument("--event_id", nargs=1, help="Event Id", type=click.INT)
+@click.argument(
     "--peril_id",
+    nargs=1,
     help="The Peril ID. One of: ...",
     type=click.STRING,
 )
-def main(event_id: int, peril_id: str) -> None:
+@click.argument(
+    "--data_directory_path",
+    nargs=1,
+    help="The path to the directory that contains the catchment and catchment_event subdirecotries.",
+    type=click.Path(exists=True),
+)
+def main(event_id: int, peril_id: str, data_directory_path: str) -> None:
     """
     For a given event_id and peril, directory paths to the catchments and catchment_event folders,
     create 8 csvs (one per return period) for that event_id that has the folowing columns:

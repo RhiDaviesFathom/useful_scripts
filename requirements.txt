@@ -1,4 +1,5 @@
 # local package
+oasislmf
 
 # external requirements
 click
