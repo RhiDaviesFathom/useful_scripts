@@ -1,6 +1,7 @@
 # pycache
 *__pycache__*
 *.idea*
+.DS_Store
 
 # exclude everything
 useful_scripts/output/*
