@@ -1,0 +1,22 @@
+[project]
+name = "useful-scripts"
+version = "0.1.0"
+description = "A collection of random scripts to aid my work at Fathom."
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+  "click>=8.4.1",
+  "flake8>=7.3",
+  "numpy>=2.4.6",
+  "pandas>=3.0.3",
+  "pre-commit>=4.6",
+  "prospector>=1.18",
+  "pyarrow>=24",
+  "pytest>=9.0.3",
+  "wheel>=0.47",
+]

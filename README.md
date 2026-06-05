@@ -22,8 +22,52 @@ Edit the source code before running this, so it is relevant for your use case.
 python3 editing_parquets.py
 ```
 
-## Installation/ Getting Started
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+Install uv using one of the methods described in the [uv docs](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer).
+
+For macOS and Linux:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Set up the pre-commit hooks:
+
+```bash
+uv run pre-commit install
+```
+
+To update the pre-commit hook versions run `uv run pre-commit autoupdate`.
+
+What other things you need to install the software and how to install them.
+
+```bash
+Give examples
+```
+
+### Dependency Management
+
+This repo uses `uv` to manage dependencies (see the [uv documentation](https://docs.astral.sh/uv/)).
+
+To add a dependency run `uv add {package}`. Only pin a requirement in here if you need to, pinning is handled automatically by the robots. For example, to add a dependency via the command line (for example, numpy):
 
 ```shell
-pip3 install -r requirements.txt
+uv add numpy
+```
+
+This will update [`pyproject.toml`](pyproject.toml). Make sure that you commit this file. The `pyproject.toml` can be reformatted by running `uv run pyproject-fmt`.
+
+## Usage
+
+A step-by-step series of examples that tell you how to run the application.
+
+To ensure the correct environment is used when running scripts, use:
+
+```bash
+uv run path/to/script
 ```
