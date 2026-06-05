@@ -7,9 +7,10 @@ from csv import DictWriter
 def add_column_in_csv(input_file, output_file, transform_row):
     """Append a column in existing csv using csv.reader / csv.writer classes"""
     # Open the input_file in read mode and output_file in write mode
-    with open(input_file, "r", encoding="utf-8") as read_obj, open(
-        output_file, "w", newline="", encoding="utf-8"
-    ) as write_obj:
+    with (
+        open(input_file, "r", encoding="utf-8") as read_obj,
+        open(output_file, "w", newline="", encoding="utf-8") as write_obj,
+    ):
         # Create a csv.reader object from the input file object
         csv_reader = reader(read_obj)
         # Create a csv.writer object from the output file object
@@ -25,9 +26,10 @@ def add_column_in_csv(input_file, output_file, transform_row):
 def add_column_in_csv_2(input_file, output_file, transform_row, tansform_column_names):
     """Append a column in existing csv using csv.reader / csv.writer classes"""
     # Open the input_file in read mode and output_file in write mode
-    with open(input_file, "r", encoding="utf-8") as read_obj, open(
-        output_file, "w", newline="", encoding="utf-8"
-    ) as write_obj:
+    with (
+        open(input_file, "r", encoding="utf-8") as read_obj,
+        open(output_file, "w", newline="", encoding="utf-8") as write_obj,
+    ):
         # Create a DictReader object from the input file object
         dict_reader = DictReader(read_obj)
         # Get a list of column names from the csv
@@ -92,9 +94,9 @@ def main():
     add_column_in_csv(
         "OED_test2_100k_loc_nrmc.csv",
         "OED2_test2_100k_loc_nrmc.csv",
-        lambda row, line_num: row.append(header_of_new_col)
-        if line_num == 1
-        else row.append(default_text),
+        lambda row, line_num: (
+            row.append(header_of_new_col) if line_num == 1 else row.append(default_text)
+        ),
     )
 
     # print('Use DictReader DictWriter to add a column with same values to an existing csv')

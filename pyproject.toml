@@ -11,12 +11,28 @@ classifiers = [
 ]
 dependencies = [
   "click>=8.4.1",
+  "dataclasses>=0.8",
+  "fathom-pyutils>=1.3.14",
   "flake8>=7.3",
+  "logging>=0.4.9.6",
   "numpy>=2.4.6",
   "pandas>=3.0.3",
   "pre-commit>=4.6",
   "prospector>=1.18",
   "pyarrow>=24",
   "pytest>=9.0.3",
+  "ruff>=0.15.16",
+  "typing>=3.10",
   "wheel>=0.47",
 ]
+
+[tool.uv]
+# explicit = true
+
+sources.fathom-pyutils-layers = { index = "private-registry" }
+
+[[tool.uv.index]]
+name = "private-registry"
+url = "https://us-central1-python.pkg.dev/fathom-pyutils/fathom-pyutils/simple/"
+publish-url = "https://us-central1-python.pkg.dev/fathom-pyutils/fathom-pyutils/"
+authenticate = "always"

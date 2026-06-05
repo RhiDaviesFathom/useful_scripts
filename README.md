@@ -22,11 +22,30 @@ Edit the source code before running this, so it is relevant for your use case.
 python3 editing_parquets.py
 ```
 
+### Calculate number of tiles from file of lat lons
+
+```bash
+uv run useful_scripts/num_tiles.py --filepath path/to/coordinates.csv
+```
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
+
+Pre-requirements:
+
+- You are logged into GCP by installing `gcloud` and running `gcloud auth application-default login` (access must also
+  be granted to the project via your email address)
+- Set up environment variables for uv as described in https://github.com/fathom-global/fathom-pyutils
+
+  ```bash
+  # Enable keyring authentication
+  export UV_KEYRING_PROVIDER=subprocess
+
+  # Set the username for the index
+  export UV_INDEX_PRIVATE_REGISTRY_USERNAME=oauth2accesstoken
 
 Install uv using one of the methods described in the [uv docs](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer).
 
@@ -62,7 +81,7 @@ uv add numpy
 
 This will update [`pyproject.toml`](pyproject.toml). Make sure that you commit this file. The `pyproject.toml` can be reformatted by running `uv run pyproject-fmt`.
 
-## Usage
+### Usage
 
 A step-by-step series of examples that tell you how to run the application.
 
