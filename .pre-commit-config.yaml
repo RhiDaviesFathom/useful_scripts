@@ -1,21 +1,38 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0  # Use the ref you want to point at
+    rev: v6.0.0  # Use the ref you want to point at
     hooks:
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: requirements-txt-fixer
+      - id: check-toml
       - id: pretty-format-json
         args: ['--autofix']
-  - repo: https://github.com/psf/black
-    rev: 22.6.0
+        exclude_types: [jupyter]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.15.0
     hooks:
-      - id: black
-  - repo: local
+      # Run the linter.
+      - id: ruff-check
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.10.0
     hooks:
-    -   id: prospector
-        name: prospector
-        entry: prospector
-        language: system
-        types: [python]
-        require_serial: true
+      - id: uv-lock
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: v2.15.1
+    hooks:
+      - id: pyproject-fmt
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.10
+    hooks: 
+    - id: actionlint
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
+    hooks:
+      - id: shellcheck
+        args: ["--severity=warning"]
