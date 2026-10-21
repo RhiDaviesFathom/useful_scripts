@@ -1,7 +1,4 @@
-from csv import writer
-from csv import reader
-from csv import DictReader
-from csv import DictWriter
+from csv import DictReader, DictWriter, reader, writer
 
 
 def add_column_in_csv(input_file, output_file, transform_row):

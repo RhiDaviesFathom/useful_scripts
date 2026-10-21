@@ -7,10 +7,10 @@ Example usage:
 
 import logging
 from pathlib import Path
+
 import click
 import pandas as pd
 from fathom_pyutils.tiles import TileGeom
-from typing import List, Set
 
 # Configure logging format and level
 logging.basicConfig(
@@ -18,15 +18,16 @@ logging.basicConfig(
     format="%(asctime)s - [%(levelname)s] - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+logger = logging.getLogger(__name__)
 
 
 def load_coordinates_to_dataframe(file_path: Path) -> pd.DataFrame:
     """Reads a CSV file, validates columns, and returns a pandas DataFrame."""
-    logging.info(f"Attempting to read file from: {file_path}")
+    logger.info(f"Attempting to read file from: {file_path}")
 
     # Check if file exists
     if not file_path.exists():
-        logging.error(f"File not found: {file_path}")
+        logger.error(f"File not found: {file_path}")
         raise FileNotFoundError(f"The file {file_path} does not exist.")
 
     try:
@@ -40,17 +41,17 @@ def load_coordinates_to_dataframe(file_path: Path) -> pd.DataFrame:
         required_columns = {"Latitude", "Longitude"}
         if not required_columns.issubset(df.columns):
             missing = required_columns - set(df.columns)
-            logging.error(f"CSV is missing required columns: {missing}")
+            logger.error(f"CSV is missing required columns: {missing}")
             raise ValueError("CSV must contain 'Latitude' and 'Longitude' columns.")
 
-        logging.info(f"Successfully loaded {len(df)} rows from {file_path.name}.")
+        logger.info(f"Successfully loaded {len(df)} rows from {file_path.name}.")
         return df[["Latitude", "Longitude"]]
 
     except pd.errors.EmptyDataError:
-        logging.error("The provided CSV file is empty.")
+        logger.error("The provided CSV file is empty.")
         raise
     except Exception as e:
-        logging.error(f"An unexpected error occurred while reading CSV: {e}")
+        logger.error(f"An unexpected error occurred while reading CSV: {e}")
         raise
 
 
@@ -59,9 +60,9 @@ def process_tiles(df: pd.DataFrame) -> int:
 
     and returns the count of unique tile names.
     """
-    logging.info("Generating tile names using 'from_point' class method...")
+    logger.info("Generating tile names using 'from_point' class method...")
 
-    tile_names_list: List[str] = []
+    tile_names_list: list[str] = []
 
     # Iterate through DataFrame rows
     for _, row in df.iterrows():
@@ -77,10 +78,10 @@ def process_tiles(df: pd.DataFrame) -> int:
     # -------------------------------
 
     # Filter to unique tile names
-    unique_tile_names: Set[str] = set(tile_names_list)
+    unique_tile_names: set[str] = set(tile_names_list)
     unique_count = len(unique_tile_names)
 
-    logging.info(
+    logger.info(
         f"Found {unique_count} unique tiles out of {len(tile_names_list)} rows."
     )
     return unique_count
@@ -103,7 +104,7 @@ def main(filepath: Path):
         # Final result output
         click.echo(f"\nResult: Total number of tiles across the CSV is {tile_count}")
 
-    except Exception as e:
+    except (FileNotFoundError, ValueError) as e:
         # Logs have already captured specific errors, graceful exit for user
         click.echo(
             f"\nProcess failed. Check logs above for details. Error: {e}",
