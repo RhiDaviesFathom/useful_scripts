@@ -1,12 +1,13 @@
+from pathlib import Path
+
+import pandas as pd
 import pytest
 from click.testing import CliRunner
-from pathlib import Path
-import pandas as pd
 
 # Import elements from your script
 from useful_scripts.num_tiles import (
-    main,
     load_coordinates_to_dataframe,
+    main,
     process_tiles,
 )
 

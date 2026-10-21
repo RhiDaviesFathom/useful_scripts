@@ -12,7 +12,7 @@ def generate_wet_area_pickle(output_dir: str):
     wet_area_df = pd.DataFrame()
 
     if not os.path.isdir(output_dir):
-        raise IOError("Output directory doesn't exist.")
+        raise OSError("Output directory doesn't exist.")
 
     wet_area_dict = {"lat_id": [191322, 183956], "lon_id": [-4197, -9970]}
     wet_area_df = pd.DataFrame(data=wet_area_dict)
@@ -29,7 +29,7 @@ def generate_wet_area_parquet(output_dir: str):
     wet_area_df = pd.DataFrame()
 
     if not os.path.isdir(output_dir):
-        raise IOError("Output directory doesn't exist.")
+        raise OSError("Output directory doesn't exist.")
 
     wet_area_dict = {
         "lat_id": [191322],
