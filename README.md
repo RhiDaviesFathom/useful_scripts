@@ -1,92 +1,90 @@
-# Useful Scripts
+# num-tiles
 
-## Background
-This has been set up as a centralised personal repo that will contain a collection of useful scripts that I have used 
-one and might come in hand again later.
+A small CLI that counts how many unique Fathom tiles a set of coordinates falls into.
 
-## Commands
-### Add columns to an existing csv
+Give it a CSV with `Latitude` and `Longitude` columns and it reports the number of
+distinct tiles (as defined by `fathom_pyutils.tiles.TileGeom`) that cover those
+points.
 
-This script takes two command line arguments
-1) The name of the csv file you want to add the columns to.
-2) The name of the output csv file you want to create.
+## Prerequisites
 
-
-```shell
-python3 add_column_to_csv.py
-```
-
-### Create or edit a parquet file
-Edit the source code before running this, so it is relevant for your use case.
-```shell
-python3 editing_parquets.py
-```
-
-### Calculate number of tiles from file of lat lons
-
-```bash
-uv run useful_scripts/num_tiles.py --filepath path/to/coordinates.csv
-```
-
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-### Prerequisites
-
-Pre-requirements:
-
-- You are logged into GCP by installing `gcloud` and running `gcloud auth application-default login` (access must also
-  be granted to the project via your email address)
-- Set up environment variables for uv as described in https://github.com/fathom-global/fathom-pyutils
+- [uv](https://docs.astral.sh/uv/getting-started/installation/):
 
   ```bash
-  # Enable keyring authentication
-  export UV_KEYRING_PROVIDER=subprocess
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
 
-  # Set the username for the index
-  export UV_INDEX_PRIVATE_REGISTRY_USERNAME=oauth2accesstoken
+- Access to the private `fathom-pyutils` registry on GCP:
+  1. Install `gcloud` and run `gcloud auth application-default login`. Your email
+     must already have access to the registry project.
+  2. Set up keyring auth for uv (see
+     [fathom-pyutils](https://github.com/fathom-global/fathom-pyutils)):
 
-Install uv using one of the methods described in the [uv docs](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer).
+     ```bash
+     export UV_KEYRING_PROVIDER=subprocess
+     export UV_INDEX_PRIVATE_REGISTRY_USERNAME=oauth2accesstoken
+     ```
 
-For macOS and Linux:
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-Set up the pre-commit hooks:
-
-```bash
-uv run pre-commit install
-```
-
-To update the pre-commit hook versions run `uv run pre-commit autoupdate`.
-
-What other things you need to install the software and how to install them.
+## Setup
 
 ```bash
-Give examples
+uv sync
+uv run pre-commit install --hook-type pre-commit --hook-type pre-push
 ```
 
-### Dependency Management
-
-This repo uses `uv` to manage dependencies (see the [uv documentation](https://docs.astral.sh/uv/)).
-
-To add a dependency run `uv add {package}`. Only pin a requirement in here if you need to, pinning is handled automatically by the robots. For example, to add a dependency via the command line (for example, numpy):
-
-```shell
-uv add numpy
-```
-
-This will update [`pyproject.toml`](pyproject.toml). Make sure that you commit this file. The `pyproject.toml` can be reformatted by running `uv run pyproject-fmt`.
-
-### Usage
-
-A step-by-step series of examples that tell you how to run the application.
-
-To ensure the correct environment is used when running scripts, use:
+## Usage
 
 ```bash
-uv run path/to/script
+uv run num-tiles --filepath path/to/coordinates.csv
+uv run num-tiles -f path/to/coordinates.csv --verbose   # log the tile for every row
+```
+
+The input CSV must contain `Latitude` and `Longitude` columns. Other columns are
+ignored, and whitespace around header names is stripped:
+
+```csv
+Latitude,Longitude
+23.03,72.58
+12.9789,77.5917
+```
+
+Exit codes:
+
+| Code | Meaning                                   |
+| ---- | ----------------------------------------- |
+| 0    | Success                                   |
+| 1    | Invalid CSV (missing columns, empty file) |
+| 2    | Usage error (e.g. file does not exist)    |
+
+## Development
+
+| Task                 | Command                                |
+| -------------------- | -------------------------------------- |
+| Run tests + coverage | `uv run pytest`                        |
+| Lint                 | `uv run ruff check .`                  |
+| Format               | `uv run ruff format .`                 |
+| Type-check           | `uv run ty check`                      |
+| All hooks            | `uv run pre-commit run --all-files`    |
+| Add a dependency     | `uv add <package>`                     |
+| Add a dev dependency | `uv add --dev <package>`               |
+| Upgrade the lockfile | `uv lock --upgrade`                    |
+| Update hook versions | `uv run pre-commit autoupdate`         |
+
+Commit `pyproject.toml` and `uv.lock` together. Pre-commit runs ruff, ty and
+`uv lock` on every commit, and the test suite on every push.
+
+CI (`.github/workflows/ci.yaml`) runs ruff and ty. It can't reach the private
+registry, so it doesn't run the tests. Run them locally before you push; the
+pre-push hook does this for you.
+
+## Project layout
+
+```text
+src/geometry_logic/
+  num_tiles.py      # CLI entry point and tile-counting logic
+tests/
+  conftest.py       # shared fixtures
+  test_num_tiles.py
+pyproject.toml      # project metadata, dependencies and tool config
+uv.lock             # pinned dependency versions
 ```
