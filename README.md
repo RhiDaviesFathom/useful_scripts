@@ -73,9 +73,10 @@ Exit codes:
 Commit `pyproject.toml` and `uv.lock` together. Pre-commit runs ruff, ty and
 `uv lock` on every commit, and the test suite on every push.
 
-CI (`.github/workflows/ci.yaml`) runs ruff and ty. It can't reach the private
-registry, so it doesn't run the tests. Run them locally before you push; the
-pre-push hook does this for you.
+CI (`.github/workflows/ci.yaml`) has two jobs. `lint` runs ruff. `test` signs in to
+GCP with Workload Identity Federation, installs dependencies from `uv.lock`, then
+runs ty and pytest. It uses the `WORKLOAD_IDENTITY_PROVIDER` and
+`SERVICE_ACCOUNT_EMAIL` Actions secrets.
 
 Dependabot (`.github/dependabot.yml`) opens weekly PRs. Minor and patch updates
 are grouped into one PR for runtime dependencies, one for dev dependencies and

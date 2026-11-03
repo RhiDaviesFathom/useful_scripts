@@ -14,14 +14,12 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint and type-check
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
-        with:
-          enable-cache: true
 
       - name: Ruff lint
         run: uvx ruff check --output-format=github
@@ -29,13 +27,36 @@ jobs:
       - name: Ruff format
         run: uvx ruff format --check
 
-      # fathom-pyutils lives in a private registry that CI cannot reach, so skip
-      # installing it. ty still checks everything else against the public deps.
-      - name: Install public dependencies
-        run: >-
-          uv sync --frozen
-          --no-install-package fathom-pyutils
-          --no-install-package fathom-pyutils-core
+  test:
+    name: Type-check and test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # needed for Workload Identity Federation
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: true
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
+          token_format: access_token
+
+      # --locked also fails the build if uv.lock is out of date with pyproject.toml.
+      - name: Install dependencies
+        env:
+          UV_INDEX_PRIVATE_REGISTRY_USERNAME: oauth2accesstoken
+          UV_INDEX_PRIVATE_REGISTRY_PASSWORD: ${{ steps.auth.outputs.access_token }}
+        run: uv sync --locked
 
       - name: ty
-        run: uv run --no-sync ty check --ignore unresolved-import
+        run: uv run --no-sync ty check
+
+      - name: pytest
+        run: uv run --no-sync pytest
