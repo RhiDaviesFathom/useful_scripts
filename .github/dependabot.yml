@@ -1,21 +1,8 @@
 version: 2
 
-# fathom-pyutils lives in GCP Artifact Registry. Dependabot authenticates with a
-# service-account key, stored as the Dependabot secret ARTIFACT_REGISTRY_KEY_BASE64
-# (Settings -> Secrets and variables -> Dependabot). The account only needs the
-# Artifact Registry Reader role.
-registries:
-  private-registry:
-    type: python-index
-    url: https://us-central1-python.pkg.dev/fathom-pyutils/fathom-pyutils/simple/
-    username: _json_key_base64
-    password: ${{ secrets.ARTIFACT_REGISTRY_KEY_BASE64 }}
-
 updates:
   - package-ecosystem: uv
     directory: /
-    registries:
-      - private-registry
     schedule:
       interval: weekly
       day: monday

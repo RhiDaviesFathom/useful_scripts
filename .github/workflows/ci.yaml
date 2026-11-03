@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint and type-check
+  checks:
+    name: Lint, type-check and test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -29,13 +29,12 @@ jobs:
       - name: Ruff format
         run: uvx ruff format --check
 
-      # fathom-pyutils lives in a private registry that CI cannot reach, so skip
-      # installing it. ty still checks everything else against the public deps.
-      - name: Install public dependencies
-        run: >-
-          uv sync --frozen
-          --no-install-package fathom-pyutils
-          --no-install-package fathom-pyutils-core
+      # --locked also fails the build if uv.lock is out of date with pyproject.toml.
+      - name: Install dependencies
+        run: uv sync --locked
 
       - name: ty
-        run: uv run --no-sync ty check --ignore unresolved-import
+        run: uv run --no-sync ty check
+
+      - name: pytest
+        run: uv run --no-sync pytest
