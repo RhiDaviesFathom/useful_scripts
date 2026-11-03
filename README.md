@@ -77,6 +77,11 @@ CI (`.github/workflows/ci.yaml`) runs ruff and ty. It can't reach the private
 registry, so it doesn't run the tests. Run them locally before you push; the
 pre-push hook does this for you.
 
+Dependabot (`.github/dependabot.yml`) opens weekly PRs. Minor and patch updates
+are grouped into one PR for runtime dependencies, one for dev dependencies and
+one for GitHub Actions. Each major update gets its own PR. Pre-commit hook
+versions aren't covered here; update them with `uv run pre-commit autoupdate`.
+
 ## Project layout
 
 ```text
