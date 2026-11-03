@@ -1,38 +1,45 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0  # Use the ref you want to point at
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-merge-conflict
-      - id: requirements-txt-fixer
       - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
       - id: pretty-format-json
-        args: ['--autofix']
-        exclude_types: [jupyter]
+        args: [--autofix]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
-    rev: v0.17.1
+    rev: v0.17.3
     hooks:
-      # Run the linter.
       - id: ruff-check
-        args: [ --fix ]
-      # Run the formatter.
+        args: [--fix]
       - id: ruff-format
   - repo: https://github.com/astral-sh/uv-pre-commit
-    # uv version.
-    rev: 0.10.0
+    rev: 0.13.7
     hooks:
       - id: uv-lock
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.15.1
+    rev: v2.30.3
     hooks:
       - id: pyproject-fmt
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.10
-    hooks: 
-    - id: actionlint
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.11.0
+    rev: v1.7.12
     hooks:
-      - id: shellcheck
-        args: ["--severity=warning"]
+      - id: actionlint
+  - repo: local
+    hooks:
+      - id: ty
+        name: ty check
+        entry: uv run --frozen ty check
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: pytest
+        name: pytest
+        entry: uv run --frozen pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]

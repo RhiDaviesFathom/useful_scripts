@@ -1,114 +1,123 @@
+import logging
 from pathlib import Path
 
 import pandas as pd
 import pytest
 from click.testing import CliRunner
 
-# Import elements from your script
-from useful_scripts.num_tiles import (
+from geometry_logic.num_tiles import (
+    count_unique_tiles,
     load_coordinates_to_dataframe,
     main,
-    process_tiles,
 )
 
-# ==========================================
-# FIXTURES (Sample Data Setups)
-# ==========================================
+# --- load_coordinates_to_dataframe ------------------------------------------
 
 
-@pytest.fixture
-def valid_csv_content():
-    # Concrete coordinates to let fathom_pyutils calculate actual names
-    return "Latitude,Longitude\n23.03,72.58\n12.9789,77.5917\n23.03,72.58\n"
+def test_load_valid_csv(valid_csv):
+    df = load_coordinates_to_dataframe(valid_csv)
 
-
-@pytest.fixture
-def invalid_csv_content():
-    return "WrongLat,WrongLon\n23.03,72.58\n"
-
-
-@pytest.fixture
-def empty_csv_content():
-    return ""
-
-
-# ==========================================
-# UNIT TESTS
-# ==========================================
-
-
-def test_load_coordinates_to_dataframe_success(tmp_path, valid_csv_content):
-    """Test that a valid CSV is correctly loaded into a DataFrame."""
-    csv_file = tmp_path / "valid.csv"
-    csv_file.write_text(valid_csv_content)
-
-    df = load_coordinates_to_dataframe(csv_file)
-
-    assert isinstance(df, pd.DataFrame)
+    assert list(df.columns) == ["Latitude", "Longitude"]
     assert len(df) == 3
+
+
+def test_load_strips_header_whitespace(write_csv):
+    path = write_csv(" Latitude , Longitude \n23.03,72.58\n")
+
+    df = load_coordinates_to_dataframe(path)
+
     assert list(df.columns) == ["Latitude", "Longitude"]
 
 
-def test_load_coordinates_to_dataframe_file_not_found():
-    """Test that a missing file raises FileNotFoundError."""
+def test_load_drops_extra_columns(write_csv):
+    path = write_csv("Name,Latitude,Longitude\nAhmedabad,23.03,72.58\n")
+
+    df = load_coordinates_to_dataframe(path)
+
+    assert list(df.columns) == ["Latitude", "Longitude"]
+
+
+def test_load_missing_file_raises(tmp_path):
     with pytest.raises(FileNotFoundError):
-        load_coordinates_to_dataframe(Path("non_existent_file.csv"))
+        load_coordinates_to_dataframe(tmp_path / "missing.csv")
 
 
-def test_load_coordinates_to_dataframe_missing_columns(tmp_path, invalid_csv_content):
-    """Test that a CSV missing correct headers throws a ValueError."""
-    csv_file = tmp_path / "invalid.csv"
-    csv_file.write_text(invalid_csv_content)
+@pytest.mark.parametrize(
+    ("content", "missing"),
+    [
+        ("WrongLat,WrongLon\n23.03,72.58\n", "Latitude, Longitude"),
+        ("Latitude\n23.03\n", "Longitude"),
+    ],
+)
+def test_load_missing_columns_raises(write_csv, content, missing):
+    path = write_csv(content)
 
-    with pytest.raises(
-        ValueError, match="CSV must contain 'Latitude' and 'Longitude' columns"
-    ):
-        load_coordinates_to_dataframe(csv_file)
+    with pytest.raises(ValueError, match=f"missing: {missing}"):
+        load_coordinates_to_dataframe(path)
 
 
-def test_load_coordinates_to_dataframe_empty_file(tmp_path, empty_csv_content):
-    """Test that an empty CSV file triggers pandas EmptyDataError."""
-    csv_file = tmp_path / "empty.csv"
-    csv_file.write_text(empty_csv_content)
+def test_load_empty_file_raises(write_csv):
+    path = write_csv("")
 
     with pytest.raises(pd.errors.EmptyDataError):
-        load_coordinates_to_dataframe(csv_file)
+        load_coordinates_to_dataframe(path)
 
 
-def test_process_tiles_deduplication():
-    """Test that process_tiles correctly counts unique tiles using live Tiles package."""
-    # Dataframe containing 3 rows but only 2 unique locations
+# --- count_unique_tiles -----------------------------------------------------
+
+
+def test_count_unique_tiles_deduplicates():
     df = pd.DataFrame(
         {"Latitude": [23.03, 12.9789, 23.03], "Longitude": [72.58, 77.5917, 72.58]}
     )
 
-    unique_count = process_tiles(df)
-
-    # Verification based on real library execution outputs
-    assert unique_count == 2
+    assert count_unique_tiles(df) == 2
 
 
-# ==========================================
-# END-TO-END CLI TESTS (using Click Runner)
-# ==========================================
+def test_count_unique_tiles_empty_dataframe():
+    df = pd.DataFrame({"Latitude": [], "Longitude": []})
+
+    assert count_unique_tiles(df) == 0
 
 
-def test_cli_success(tmp_path, valid_csv_content):
-    """Test successful CLI execution path with live dependency execution."""
-    csv_file = tmp_path / "test_coords.csv"
-    csv_file.write_text(valid_csv_content)
+# --- CLI --------------------------------------------------------------------
 
-    runner = CliRunner()
-    result = runner.invoke(main, ["--filepath", str(csv_file)])
+
+def test_cli_success(valid_csv):
+    result = CliRunner().invoke(main, ["--filepath", str(valid_csv)])
 
     assert result.exit_code == 0
     assert "Result: Total number of tiles across the CSV is 2" in result.output
 
 
-def test_cli_missing_file():
-    """Test CLI behavior when pointing to a missing filepath."""
-    runner = CliRunner()
-    result = runner.invoke(main, ["--filepath", "missing_file.csv"])
+def test_cli_verbose_logs_tile_per_row(valid_csv, caplog):
+    with caplog.at_level(logging.DEBUG, logger="geometry_logic.num_tiles"):
+        result = CliRunner().invoke(main, ["-f", str(valid_csv), "--verbose"])
 
-    # Click's native validation flags missing parameters
-    assert result.exit_code != 0
+    assert result.exit_code == 0
+    assert sum("-> " in r.getMessage() for r in caplog.records) == 3
+
+
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    [
+        ("WrongLat,WrongLon\n23.03,72.58\n", "must contain"),
+        ("", "No columns to parse"),
+    ],
+    ids=["missing-columns", "empty-file"],
+)
+def test_cli_invalid_csv_exits_with_error(write_csv, content, expected):
+    path = write_csv(content)
+
+    result = CliRunner().invoke(main, ["-f", str(path)])
+
+    assert result.exit_code == 1
+    assert "Error:" in result.output
+    assert expected in result.output
+
+
+def test_cli_missing_file_is_usage_error():
+    result = CliRunner().invoke(main, ["-f", str(Path("does-not-exist.csv"))])
+
+    assert result.exit_code == 2
+    assert "does not exist" in result.output
