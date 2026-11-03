@@ -40,19 +40,22 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Authenticate to Google Cloud
-        id: auth
-        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
+      # Fathom's shared action: signs in to GCP and writes Application Default
+      # Credentials, which the Artifact Registry keyring plugin below picks up.
+      - name: PyUtils Composite Action
+        uses: fathom-global/fathom-pyutils/.github/actions@a430ecdd691614820030abe30de240de0eac767e  # main 2026-10-22
         with:
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
-          token_format: access_token
+
+      - name: Install keyring
+        run: uv tool install keyring --with keyrings.google-artifactregistry-auth
 
       # --locked also fails the build if uv.lock is out of date with pyproject.toml.
       - name: Install dependencies
         env:
+          UV_KEYRING_PROVIDER: subprocess
           UV_INDEX_PRIVATE_REGISTRY_USERNAME: oauth2accesstoken
-          UV_INDEX_PRIVATE_REGISTRY_PASSWORD: ${{ steps.auth.outputs.access_token }}
         run: uv sync --locked
 
       - name: ty

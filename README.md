@@ -74,9 +74,10 @@ Commit `pyproject.toml` and `uv.lock` together. Pre-commit runs ruff, ty and
 `uv lock` on every commit, and the test suite on every push.
 
 CI (`.github/workflows/ci.yaml`) has two jobs. `lint` runs ruff. `test` signs in to
-GCP with Workload Identity Federation, installs dependencies from `uv.lock`, then
-runs ty and pytest. It uses the `WORKLOAD_IDENTITY_PROVIDER` and
-`SERVICE_ACCOUNT_EMAIL` Actions secrets.
+GCP with the shared `fathom-pyutils` composite action (Workload Identity
+Federation, using the `WORKLOAD_IDENTITY_PROVIDER` and `SERVICE_ACCOUNT_EMAIL`
+Actions secrets). It then installs dependencies from `uv.lock` through the
+Artifact Registry keyring plugin and runs ty and pytest.
 
 Dependabot (`.github/dependabot.yml`) opens weekly PRs. Minor and patch updates
 are grouped into one PR for runtime dependencies, one for dev dependencies and
