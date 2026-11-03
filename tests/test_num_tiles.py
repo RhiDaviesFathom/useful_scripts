@@ -103,8 +103,9 @@ def test_cli_verbose_logs_tile_per_row(valid_csv, caplog):
     [
         ("WrongLat,WrongLon\n23.03,72.58\n", "must contain"),
         ("", "No columns to parse"),
+        ("Latitude,Longitude\n95,10\n", "Latitude must be between -90 and 90"),
     ],
-    ids=["missing-columns", "empty-file"],
+    ids=["missing-columns", "empty-file", "out-of-range"],
 )
 def test_cli_invalid_csv_exits_with_error(write_csv, content, expected):
     path = write_csv(content)

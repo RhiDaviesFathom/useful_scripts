@@ -16,7 +16,6 @@ classifiers = [
 ]
 dependencies = [
   "click>=8.5",
-  "fathom-pyutils>=1.6.1",
   "pandas>=3.0.6",
 ]
 scripts.num-tiles = "geometry_logic.num_tiles:main"
@@ -31,14 +30,7 @@ dev = [
 ]
 
 [tool.uv]
-sources.fathom-pyutils = { index = "private-registry" }
 build-backend.module-name = "geometry_logic"
-
-[[tool.uv.index]]
-name = "private-registry"
-url = "https://us-central1-python.pkg.dev/fathom-pyutils/fathom-pyutils/simple/"
-publish-url = "https://us-central1-python.pkg.dev/fathom-pyutils/fathom-pyutils/"
-authenticate = "always"
 
 [tool.ruff]
 target-version = "py313"

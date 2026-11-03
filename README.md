@@ -3,27 +3,22 @@
 A small CLI that counts how many unique Fathom tiles a set of coordinates falls into.
 
 Give it a CSV with `Latitude` and `Longitude` columns and it reports the number of
-distinct tiles (as defined by `fathom_pyutils.tiles.TileGeom`) that cover those
-points.
+distinct 1-degree tiles that cover those points.
+
+Tiles are named after their lower-left corner (e.g. `n23e072`). They follow
+Fathom's tile scheme, which is shifted north-west by 1/7200° (half a 3-arcsecond
+pixel). That means a point on an exact whole-degree line counts towards the tile
+to its south and east. The logic lives in
+[`src/geometry_logic/tiles.py`](src/geometry_logic/tiles.py) and is tested against
+values generated with `fathom-pyutils`.
 
 ## Prerequisites
 
-- [uv](https://docs.astral.sh/uv/getting-started/installation/):
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/):
 
-  ```bash
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  ```
-
-- Access to the private `fathom-pyutils` registry on GCP:
-  1. Install `gcloud` and run `gcloud auth application-default login`. Your email
-     must already have access to the registry project.
-  2. Set up keyring auth for uv (see
-     [fathom-pyutils](https://github.com/fathom-global/fathom-pyutils)):
-
-     ```bash
-     export UV_KEYRING_PROVIDER=subprocess
-     export UV_INDEX_PRIVATE_REGISTRY_USERNAME=oauth2accesstoken
-     ```
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
 ## Setup
 
@@ -73,11 +68,9 @@ Exit codes:
 Commit `pyproject.toml` and `uv.lock` together. Pre-commit runs ruff, ty and
 `uv lock` on every commit, and the test suite on every push.
 
-CI (`.github/workflows/ci.yaml`) has two jobs. `lint` runs ruff. `test` signs in to
-GCP with the shared `fathom-pyutils` composite action (Workload Identity
-Federation, using the `WORKLOAD_IDENTITY_PROVIDER` and `SERVICE_ACCOUNT_EMAIL`
-Actions secrets). It then installs dependencies from `uv.lock` through the
-Artifact Registry keyring plugin and runs ty and pytest.
+CI (`.github/workflows/ci.yaml`) runs ruff and then installs dependencies from
+`uv.lock` (failing if the lockfile is out of date). Finally it runs ty and
+pytest. It needs no secrets.
 
 Dependabot (`.github/dependabot.yml`) opens weekly PRs. Minor and patch updates
 are grouped into one PR for runtime dependencies, one for dev dependencies and
@@ -88,10 +81,12 @@ versions aren't covered here; update them with `uv run pre-commit autoupdate`.
 
 ```text
 src/geometry_logic/
-  num_tiles.py      # CLI entry point and tile-counting logic
+  num_tiles.py      # CLI entry point: load the CSV, count unique tiles
+  tiles.py          # point -> tile name
 tests/
   conftest.py       # shared fixtures
   test_num_tiles.py
+  test_tiles.py     # golden values from fathom-pyutils
 pyproject.toml      # project metadata, dependencies and tool config
 uv.lock             # pinned dependency versions
 ```

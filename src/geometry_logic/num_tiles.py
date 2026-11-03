@@ -12,7 +12,8 @@ from pathlib import Path
 
 import click
 import pandas as pd
-from fathom_pyutils.tiles import TileGeom, TileName
+
+from geometry_logic.tiles import tile_name_from_point
 
 LATITUDE = "Latitude"
 LONGITUDE = "Longitude"
@@ -66,12 +67,15 @@ def count_unique_tiles(df: pd.DataFrame) -> int:
 
     Returns:
         The number of unique tile names.
+
+    Raises:
+        ValueError: If a coordinate is outside the valid range.
     """
-    tile_names: set[TileName] = set()
+    tile_names: set[str] = set()
     for row_number, (lon, lat) in enumerate(
         zip(df[LONGITUDE], df[LATITUDE], strict=True), start=1
     ):
-        tile_name = TileGeom.from_point(lon=lon, lat=lat).tilename
+        tile_name = tile_name_from_point(lon, lat)
         logger.debug("Row %d (%s, %s) -> %s", row_number, lat, lon, tile_name)
         tile_names.add(tile_name)
 
@@ -97,12 +101,11 @@ def main(filepath: Path, *, verbose: bool) -> None:
     )
     try:
         df = load_coordinates_to_dataframe(filepath)
+        tile_count = count_unique_tiles(df)
     except (FileNotFoundError, ValueError, pd.errors.EmptyDataError) as e:
         raise click.ClickException(str(e)) from e
 
-    click.echo(
-        f"Result: Total number of tiles across the CSV is {count_unique_tiles(df)}"
-    )
+    click.echo(f"Result: Total number of tiles across the CSV is {tile_count}")
 
 
 if __name__ == "__main__":

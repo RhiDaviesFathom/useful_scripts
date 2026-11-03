@@ -13,26 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint
+  checks:
+    name: Lint, type-check and test
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
-
-      - name: Ruff lint
-        run: uvx ruff check --output-format=github
-
-      - name: Ruff format
-        run: uvx ruff format --check
-
-  test:
-    name: Type-check and test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write  # needed for Workload Identity Federation
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
@@ -40,22 +23,14 @@ jobs:
         with:
           enable-cache: true
 
-      # Fathom's shared action: signs in to GCP and writes Application Default
-      # Credentials, which the Artifact Registry keyring plugin below picks up.
-      - name: PyUtils Composite Action
-        uses: fathom-global/fathom-pyutils/.github/actions@a430ecdd691614820030abe30de240de0eac767e  # main 2026-10-22
-        with:
-          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
+      - name: Ruff lint
+        run: uvx ruff check --output-format=github
 
-      - name: Install keyring
-        run: uv tool install keyring --with keyrings.google-artifactregistry-auth
+      - name: Ruff format
+        run: uvx ruff format --check
 
       # --locked also fails the build if uv.lock is out of date with pyproject.toml.
       - name: Install dependencies
-        env:
-          UV_KEYRING_PROVIDER: subprocess
-          UV_INDEX_PRIVATE_REGISTRY_USERNAME: oauth2accesstoken
         run: uv sync --locked
 
       - name: ty
